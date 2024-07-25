@@ -1,0 +1,326 @@
+1.TimeAnnouncer.sh
+
+#!/bin/bash
+
+name="Alice"
+
+while true; do
+    present_time=$(date +"%A, %d %B %Y %I:%M %p")
+    hour=$(date +"%H")
+    
+    if [ $hour -lt 12 ]; then
+        greeting="Good morning"
+    elif [ $hour -lt 18 ]; then
+        greeting="Good afternoon"
+    else
+        greeting="Good evening"
+    fi
+    
+    echo "$greeting, $name! It's $present_time."
+    sleep 60
+done
+
+
+2.sysuptime.sh
+
+#!/bin/bash
+
+while true; do
+    uptime=$(uptime)
+    clear  # Clear the screen before displaying the updated uptime
+    echo "SUptime:"
+    echo "$uptime"
+    sleep 2
+done
+
+
+3.filesizecheck.sh
+
+
+#!/bin/bash
+
+while true; do
+    read -p "Enter file path: " file_path
+    
+    if [ -f "$file_path" ]; then
+        file_size=$(du -sh "$file_path" | awk '{print $1}')
+        clear
+        echo "File size of $file_path: $file_size"
+    else
+        clear
+        echo "File not found or invalid path."
+    fi
+done
+
+
+4. countdown.sh
+#!/bin/bash
+
+read -p "Please provide timer in seconds: " duration
+
+if [[ ! "$duration" =~ ^[0-9]+$ ]]; then
+    echo "Invalid input."
+    exit 1
+fi
+
+echo "Countdown timer:"
+while [ $duration -gt 0 ]; do
+    printf "%02d\r" $((duration%60))
+    sleep 1
+    ((duration--))
+done
+
+5.currencyconverter.sh
+
+#!/bin/bash
+
+
+API_KEY="454044f0606489b1a1f10fc0"
+TARGET_CURRENCY="USD" 
+
+while true; do
+    read -p "Enter amount in your local currency: " amount
+    
+    # Check if input is a valid number
+    if [[ ! "$amount" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        echo "Invalid input. Please enter a valid amount."
+        continue
+    fi
+    
+    # Make API call to get exchange rate
+    response=$(curl -s "https://v6.exchangerate-api.com/v6/454044f0606489b1a1f10fc0/pair/INR/$TARGET_CURRENCY")
+    if [[ "$response" == *"error"* ]]; then
+        echo "Error: Unable to fetch exchange rates. Please try again later."
+        exit 1
+    fi
+    
+    # Extract exchange rate from response
+    exchange_rate=$(echo "$response" | jq -r ".rates.$TARGET_CURRENCY")
+    
+    # Perform currency conversion
+    converted_amount=$(echo "$amount * $exchange_rate" | bc)
+    
+    # Display the result
+    echo "$amount in your local currency is equivalent to $converted_amount $TARGET_CURRENCY."
+done
+
+6.monitor.sh (file m issue) 
+
+#!/bin/bash
+
+
+filepath="/d/assignment/test.txt"
+
+
+init_time=$(stat -c %Y "$filepath")
+
+echo "Monitor file: $filepath"
+
+while true; do
+    
+    cur_time=$(stat -c %Y "$filepath")
+    
+    
+    if [ "$cur_time" -ne "$init_time" ]; then
+        echo "File has been modified!"
+        init_time=$cur_time  
+    fi
+    
+    sleep 1  
+done
+
+
+
+7.fortuneteller.sh
+
+#!/bin/bash
+
+
+fortunes=(
+    "A friend will bring you a surprise."
+    "You will have a good day"
+    "Please be extra careful while driving today."
+    "Good things come to those who wait."
+        )
+
+
+count()
+{
+    echo $(( RANDOM % ${#fortunes[@]} ))
+}
+
+echo "Random Fortune Generator:"
+
+while true; do
+    index=$(count)
+    echo "Fortune: ${fortunes[index]}"
+    sleep 5 
+done
+
+
+8.sysinfodisplay.sh
+
+#!/bin/bash
+
+while true; do
+    echo "System Information:"
+    echo "Current User: $(whoami)"
+    echo "Hostname: $(hostname)"
+    echo "OS Version: $(uname -r)"
+    sleep 60 
+done
+
+9. freedisk.sh (error)
+
+#!/bin/bash
+
+partition="/"
+
+while true; do
+    free_space=$(df -B1 "$partition" | awk 'NR==2 {print $4}')
+    
+    
+    if [ "$free_space" -gt 1000000000 ]; then
+        free_space_hr=$(echo "scale=2; $free_space / 1000000000" | bc)
+        unit="GB"
+    else
+        free_space_hr=$(echo "scale=2; $free_space / 1000000" | bc)
+        unit="MB"
+    fi
+    
+    echo "Free Disk Space on $partition: $free_space_hr $unit"
+    sleep 60  
+done
+
+
+10. watcher.sh
+
+#!/bin/bash
+
+filepath="/home/usr/file.txt"
+
+init_time=$(stat -c %Y "$filepath")
+
+echo "Monitoring file: $filepath"
+
+while true; do
+    cur_time=$(stat -c %Y "$file_path")
+    if [ "$cur_time" -gt "$init_time" ]; then
+        echo "File has been modified!"
+        break 
+    fi
+    
+    sleep 1  
+done
+
+
+11.
+networkhealth.h
+
+#!/bin/bash
+
+recipient="youremail@example.com"
+subject="Network Health Alert"
+failure=1
+failure_interval=300 
+
+targets=(
+    "6.6.6.6"
+    "google.com"
+    "linkedin.com"
+)
+
+log_file="network_health.log"
+
+send_email() {
+    local message="$1"
+    echo "$message" | mail -s "$subject" "$recipient"
+}
+
+check_health() {
+    local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+    local failures=0
+
+    for target in "${targets[@]}"; do
+        if ! ping -c 1 "$target" &> /dev/null; then
+            ((failures++))
+            echo "[$timestamp] Ping to $target failed." >> "$log_file"
+        fi
+    done
+
+    if [ "$failures" -ge "$failure" ]; then
+        send_email "Network Health Alert: failure detected within $failure_interval seconds. Check $log_file for details."
+    fi
+}
+
+while true; do
+    check_health
+    sleep "$failure_interval"
+done
+
+
+12.
+logileanalyser.h
+
+#!/bin/bash
+
+extract_ips() {
+    awk '{print $1}' "$1" | sort | uniq -c | sort -rn | head -n 10
+}
+
+
+extract_urls() {
+    awk '{print $4}' "$1" | sort | uniq -c | sort -rn | head -n 10
+}
+
+
+extract_error_codes() {
+    awk '$7 >= 400 {print $7}' "$1" | sort | uniq -c
+}
+
+
+
+
+log_file="var/log/GitLab/gitlab-rails/access.log"
+
+echo "Top 10 Most Frequent IP Addresses:"
+extract_ips "$log_file"
+
+
+echo "Top 10 Most Requested URLs:"
+extract_urls "$log_file"
+
+
+echo "Error Codes and Their Occurrences:"
+extract_error_codes "$log_file"
+
+13.
+accountpermission.sh
+
+#!/bin/bash
+
+checkpermission()
+ {
+    dircs=("/etc" "/var")
+    
+    echo "Checking file permissions:"
+    
+    for dir in "${dircs[@]}"; do
+        echo "Files in $dircs with too permissive permissions:"
+        find "$dircs" -type f -perm -o=w -ls
+        echo
+    done
+}
+
+last_login()
+ {
+    echo "List of users and their last login time:"
+    last | awk '{print $1, $5, $6, $7}'
+}
+
+last_login
+check_permission
+
+
+
+
